@@ -1,56 +1,55 @@
-// DEFINE KEY ITEMS
-let cityInput = document.getElementById("city"); // user input
-let citiesList = []; // build list for local storage in empty array
+
+let cityInput = document.getElementById("city");
+let citiesList = [];
 let todayDate = document.getElementById("todayDate");
-let cityForm = document.getElementById("formCity"); // form for input
-let buttons = document.getElementById("buttons"); // buttons past search
-let cityEl = document.querySelector("#searchedCity"); // city as displayed
+let cityForm = document.getElementById("formCity");
+let buttons = document.getElementById("buttons");
+let cityEl = document.querySelector("#currentCity");
+let apiKey = "10ab8ce23e402c3bd9e6624efeffef8b";
 
-// API CALLS
-
-// GET WEATHER FOR TODAY DISPLAY
-// My API Key: 4204bfdd6f4f063ef67429ec56df1142
 let getWeather = (city) => {
-  let apiURL1 = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=imperial&appid=4204bfdd6f4f063ef67429ec56df1142";
+  let apiURL1 = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=imperial&appid=" + apiKey;
+  console.log(apiURL1)
   fetch(apiURL1)
     .then((response) => {
-        response.json()
-          .then((data) => {
-              // getWeather => showWeather
-              showWeather(data, city);
-            });
-      });
+      response.json()
+        .then((data) => {
+          console.log(data)
+
+          showWeather(data, city);
+        });
+    });
 };
 
-// GET 5-DAY FORECAST + UV DATA
+
 let getForecast = (city) => {
-  let apiURL3 = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&units=imperial&appid=4204bfdd6f4f063ef67429ec56df1142";
+  let apiURL3 = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&units=imperial&appid=10ab8ce23e402c3bd9e6624efeffef8b";
   fetch(apiURL3)
     .then((response) => {
       response.json()
         .then((data) => {
-          // getForecast => showForecast
+
           showForecast(data, city);
-          // DEFINE LAT AND LON VALUES AS VARIABLES
+
           let lat = data.city.coord.lat;
           let lon = data.city.coord.lon;
-          // GET UV DATA BASED ON CITY LAT/LON COORDINATES
+
           let getTodayUV = (city) => {
-            let apiURL2 = "https://api.openweathermap.org/data/2.5/uvi?lat=" + lat + "&lon=" + lon + "&appid=4204bfdd6f4f063ef67429ec56df1142";
+            let apiURL2 = "https://api.openweathermap.org/data/2.5/uvi?lat=" + lat + "&lon=" + lon + "&appid=10ab8ce23e402c3bd9e6624efeffef8b";
             fetch(apiURL2)
               .then((response) => {
                 response.json()
                   .then((data) => {
-                    // SET COLOR CODED CLASS BASED ON UV VALUE
+
                     document.getElementById("todayUV")
                       .innerHTML = data.value;
-                    if(data.value <= 3) {
+                    if (data.value <= 3) {
                       document.getElementById("todayUV")
                         .setAttribute("class", "favorableLevel");
-                    } else if(data.value > 3 && data.value <=10) {
+                    } else if (data.value > 3 && data.value <= 10) {
                       document.getElementById("todayUV")
                         .setAttribute("class", "moderateLevel");
-                    } else { 
+                    } else {
                       document.getElementById("todayUV")
                         .setAttribute("class", "severeLevel");
                     };
@@ -62,22 +61,20 @@ let getForecast = (city) => {
     });
 };
 
-// SUBMIT CITY SEARCH AND STORE CITY SEARCH
 
-// submitQuery => listCity, getWeather, getForecast
 let submitQuery = (event) => {
   event.preventDefault();
   let cityEl = cityInput.value.trim();
-  let btn = document.createElement("button"); // need to add in no blank button without this breaking
+  let btn = document.createElement("button");
   btn.className = "searched-list btn";
-  btn.innerHTML = cityEl; // need to add in no dupe button needed, maybe capitalization standardization
+  btn.innerHTML = cityEl;
   buttons.appendChild(btn);
   listCity();
-  if(!citiesList.includes(cityEl) && (cityEl != "")) {
+  if (!citiesList.includes(cityEl) && (cityEl != "")) {
     citiesList.push(cityEl);
   };
   localStorage.setItem("citiesList", JSON.stringify(citiesList));
-  if(cityEl) {
+  if (cityEl) {
     getWeather(cityEl);
     getForecast(cityEl);
     cityInput.value = "";
@@ -86,26 +83,27 @@ let submitQuery = (event) => {
   }
 };
 
-// PAST CITY SEARCHES
+
+
 let listCity = () => {
   citiesList = JSON.parse(localStorage.getItem("citiesList"));
-  if(!citiesList) {
+  if (!citiesList) {
     citiesList = [];
   };
 };
 
-// ADD BUTTONS TO SEARCH HISTORY
+
 let addList = () => {
-  for(var i = 0; i < citiesList.length; i++) {
+  for (var i = 0; i < citiesList.length; i++) {
     let btn = document.createElement("button");
-    btn.className = "searched-list btn"; // one for identifying as list item, one for styling
+    btn.className = "searched-list btn";
     btn.innerHTML = citiesList[i];
-    buttons.appendChild(btn); // maybe add a clear buttons option in future
+    buttons.appendChild(btn);
   };
 
-  // USE PAST SEARCH BUTTON
+
   let listButtons = document.querySelectorAll(".searched-list");
-  for(var i = 0; i < listButtons.length; i++) {
+  for (var i = 0; i < listButtons.length; i++) {
     listButtons[i].addEventListener("click", (event) => {
       getWeather(event.target.textContent);
       getForecast(event.target.textContent);
@@ -113,17 +111,16 @@ let addList = () => {
   }
 };
 
-// TODAY WEATHER
-// Content for central weather feature
+
 todayDate.textContent = moment()
   .format("dddd, MMMM Do, h:mm a");
 
-// getWeather (API Call) => showWeather
+
 let showWeather = (weather, searchQuery) => {
-  cityEl.textContent = searchQuery;
+
   iconEl = weather.weather[0].icon;
   document.getElementById("todayIcon")
-    .src = "" + iconEl + ".png"; // changeout icon set in future, here and forecast
+    .src = "https://openweathermap.org/img/wn/" + iconEl + ".png";
   document.getElementById("todayTemp")
     .innerHTML = weather.main.temp;
   document.getElementById("todayHumidity")
@@ -132,83 +129,75 @@ let showWeather = (weather, searchQuery) => {
     .innerHTML = weather.wind.speed;
 };
 
-// 5 DAY FORECAST
+
 document.getElementById("day1")
   .innerHTML = moment()
-  .add(1, "d")
-  .format("MMMM Do");
+    .add(1, "d")
+    .format("MMMM Do");
 document.getElementById("day2")
   .innerHTML = moment()
-  .add(2, "d")
-  .format("MMMM Do");
+    .add(2, "d")
+    .format("MMMM Do");
 document.getElementById("day3")
   .innerHTML = moment()
-  .add(3, "d")
-  .format("MMMM Do");
+    .add(3, "d")
+    .format("MMMM Do");
 document.getElementById("day4")
   .innerHTML = moment()
-  .add(4, "d")
-  .format("MMMM Do");
+    .add(4, "d")
+    .format("MMMM Do");
 document.getElementById("day5")
   .innerHTML = moment()
-  .add(5, "d")
-  .format("MMMM Do");
+    .add(5, "d")
+    .format("MMMM Do");
 
 
-// getForecast (API Call) => showForecast
-// t = temperature, h = humidity, i = icon,+ # = day in 5 day forecast
 
 let showForecast = (forecast, searchQuery) => {
   cityEl.textContent = searchQuery;
-  // 1 of 5
+
   document.getElementById("t1")
     .innerHTML = forecast.list[4].main.temp;
   document.getElementById("h1")
     .innerHTML = forecast.list[4].main.humidity;
   iconEl1 = forecast.list[4].weather[0].icon;
   document.getElementById("i1")
-    .src = "./assets/css/icons/" + iconEl1 + ".png";
-  // 2 of 5
+    .src = "https://openweathermap.org/img/wn/" + iconEl1 + ".png";
+
   document.getElementById("t2")
     .innerHTML = forecast.list[12].main.temp;
   document.getElementById("h2")
     .innerHTML = forecast.list[12].main.humidity;
   iconEl2 = forecast.list[12].weather[0].icon;
   document.getElementById("i2")
-    .src = "./assets/css/icons/"  + iconEl2 + ".png";
-  // 3 of 5
+    .src = "https://openweathermap.org/img/wn/" + iconEl2 + ".png";
+
   document.getElementById("t3")
     .innerHTML = forecast.list[20].main.temp;
   document.getElementById("h3")
     .innerHTML = forecast.list[20].main.humidity;
   iconEl3 = forecast.list[20].weather[0].icon;
   document.getElementById("i3")
-    .src = "./assets/css/icons/" + iconEl3 + ".png";
-  // 4 of 5
+    .src = "https://openweathermap.org/img/wn/" + iconEl3 + ".png";
+
   document.getElementById("t4")
     .innerHTML = forecast.list[28].main.temp;
   document.getElementById("h4")
     .innerHTML = forecast.list[28].main.humidity;
   iconEl4 = forecast.list[28].weather[0].icon;
-  document.getElementById("i4") 
-    .src = "./assets/css/icons/" + iconEl4 + ".png";
-  // 5 of 5
+  document.getElementById("i4")
+    .src = "https://openweathermap.org/img/wn/" + iconEl4 + ".png";
+
   document.getElementById("t5")
     .innerHTML = forecast.list[36].main.temp;
   document.getElementById("h5")
     .innerHTML = forecast.list[36].main.humidity;
   iconEl5 = forecast.list[36].weather[0].icon;
   document.getElementById("i5")
-    .src = "./assets/css/icons/" + iconEl5 + ".png";
-  // end 5 day Forecast
+    .src = "https://openweathermap.org/img/wn/" + iconEl5 + ".png";
+
 };
 
-// LISTEN FOR CITY FORM SUBMISSION
-// listen => submitQuery
 cityForm.addEventListener("submit", submitQuery);
 listCity();
 addList();
-
-// OPEN WITH DEFAULT VALUES
-getWeather("Berkeley");
-getForecast("Berkeley");
